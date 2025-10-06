@@ -111,7 +111,7 @@ def filterPoints(config_file, pcd, model_path, if_bottom_only=True,use_efficient
 
     nbmat_sz = np.array(configs["model"]["voxel_number_in_block"])
     min_res = np.array(configs["model"]["voxel_resolution_in_meter"])
-
+    num_classes = configs["model"]["num_classes"]+1
     #define and load the 3D segformer model
     if use_efficient:
         try:
@@ -123,11 +123,11 @@ def filterPoints(config_file, pcd, model_path, if_bottom_only=True,use_efficient
             from vox3DSegFormer import Segformer
         except ImportError:
             from .vox3DSegFormer import Segformer
-
+    
     model = Segformer(
         block3d_size=nbmat_sz,
         in_chans=1,
-        num_classes=3,
+        num_classes=num_classes,
         patch_size=configs["model"]["patch_size"],
         decoder_dim=configs["model"]["decoder_dim"],
         embed_dims=configs["model"]["channel_dims"],
@@ -141,7 +141,7 @@ def filterPoints(config_file, pcd, model_path, if_bottom_only=True,use_efficient
     )
 
     device = "cuda" if use_cuda else "cpu"
-
+    
     if use_cuda:
         model = model.cuda()
         state_dict = torch.load(model_path)
@@ -167,10 +167,6 @@ def filterPoints(config_file, pcd, model_path, if_bottom_only=True,use_efficient
         cut_dim=2
     else:
         cut_dim=3
-
-    # pcd_min = np.min(pcd[:, :cut_dim], axis=0)
-    # block_ijk = np.floor((pcd[:, :cut_dim] - pcd_min[:cut_dim]) / min_res[:cut_dim] / nbmat_sz[:cut_dim]).astype(np.int32)
-    # _, block_idx_groups = npi.group_by(block_ijk, np.arange(len(block_ijk)))
 
     _, block_idx_groups = sliding_blocks_point_indices(pcd[:, :cut_dim], min_res[:cut_dim] * nbmat_sz[:cut_dim], overlap_ratio=0.1)
 
@@ -198,54 +194,70 @@ def filterPoints(config_file, pcd, model_path, if_bottom_only=True,use_efficient
     progress_callback(15)
 
     #apply the DL model blockwisely
-    # pcd_pred = np.zeros(len(pcd), dtype=np.int32)
-    pcd_pred = np.full(len(pcd), dtype=bool, fill_value=False)
+    if num_classes>3:
+        pcd_pred = np.full(len(pcd), dtype=int, fill_value=num_classes-1)
+        
+        total_nbs = len(nb_idxs)
+        for i in range(total_nbs):
+            nb_idx = nb_idxs[i]
+
+            x = torch.zeros(nb_tsz, 1)
+            if len(nb_idx) > 0:
+                x[nb_idx, :] = 1.0
+
+            x = torch.swapaxes(torch.moveaxis(x.reshape((1, *nbmat_sz, 1)).float(), -1, 1), -1, 2)
+            with torch.no_grad():
+                h = model(x.to(device))
+
+            h_nonzero = torch.moveaxis(torch.unsqueeze(torch.moveaxis(torch.swapaxes(h, -1, 2), 1, -1).reshape((nb_tsz, num_classes))[nb_idx, :],0), -1, 1)
+            h_nonzero = torch.argmax(h_nonzero[0], dim=0)
+
+            nb_pred = h_nonzero.cpu().detach().numpy()
+            pcd_pred[nb_pcd_idxs[i]] = nb_pred[nb_inverse_idxs[i]]
+
+            progress_value = int(85 * i / total_nbs) + 15
+            progress_callback(progress_value)
+    
+        progress_callback(100)
+        return pcd_pred.astype(np.int32)#int(1,2)
+    
+    else:#binary case
+        pcd_pred = np.full(len(pcd), dtype=bool, fill_value=False)
+            
+
+        total_nbs = len(nb_idxs)
+        for i in range(total_nbs):
+            nb_idx = nb_idxs[i]
+
+            x = torch.zeros(nb_tsz, 1)
+            if len(nb_idx) > 0:
+                x[nb_idx, :] = 1.0
+
+            x = torch.swapaxes(torch.moveaxis(x.reshape((1, *nbmat_sz, 1)).float(), -1, 1), -1, 2)
+            with torch.no_grad():
+                h = model(x.to(device))
+
+            h_nonzero = torch.moveaxis(torch.unsqueeze(torch.moveaxis(torch.swapaxes(h, -1, 2), 1, -1).reshape((nb_tsz, num_classes))[nb_idx, :],0), -1, 1)
+            h_nonzero = torch.argmax(h_nonzero[0], dim=0)
+
+            nb_pred = h_nonzero.cpu().detach().numpy()
+            pcd_pred[nb_pcd_idxs[i]] = pcd_pred[nb_pcd_idxs[i]] | (nb_pred[nb_inverse_idxs[i]]>1)#Flag the binary over the overlapped area
+
+            progress_value = int(85 * i / total_nbs) + 15
+            progress_callback(progress_value)
 
 
-    total_nbs = len(nb_idxs)
-    for i in range(total_nbs):
-        nb_idx = nb_idxs[i]
-
-        x = torch.zeros(nb_tsz, 1)
-        if len(nb_idx) > 0:
-            x[nb_idx, :] = 1.0
-
-        # x = x.reshape((1, *nbmat_sz, 1)).float().moveaxis(-1, 1).swapaxes(-1, -2)
-        x = torch.swapaxes(torch.moveaxis(x.reshape((1, *nbmat_sz, 1)).float(), -1, 1), -1, 2)
-
-        # x = Variable(x)
-        with torch.no_grad():
-            h = model(x.to(device))
-
-        # h_nonzero = h.swapaxes(-1, -2).moveaxis(1, -1).reshape(nb_tsz, 3)[nb_idx, :].unsqueeze(0).moveaxis(-1, 1)
-        h_nonzero = torch.moveaxis(torch.unsqueeze(torch.moveaxis(torch.swapaxes(h, -1, 2), 1, -1).reshape((nb_tsz, 3))[nb_idx, :],0), -1, 1)
-        h_nonzero = torch.argmax(h_nonzero[0], dim=0)
-
-        nb_pred = h_nonzero.cpu().detach().numpy()
-        # pcd_pred[nb_pcd_idx] = nb_pred[nb_inverse_idx]
-        pcd_pred[nb_pcd_idxs[i]] = pcd_pred[nb_pcd_idxs[i]] | (nb_pred[nb_inverse_idxs[i]]>1)
-
-        progress_value = int(85 * i / total_nbs) + 15
-        progress_callback(progress_value)
+        # pcd_pred[pcd_pred > 2.0] = 2.0
+        if if_bottom_only:
+            seen = np.zeros_like(pcd_pred, dtype=bool)
+            seen[np.concatenate(nb_pcd_idxs)] = True  # mark every index that was ever visited
+            pcd_pred[~seen] = True
+        
+        progress_callback(100)
+        return pcd_pred.astype(np.int32)+1#bool(False,True) to int(1,2)
 
 
-    # pcd_pred[pcd_pred > 2.0] = 2.0
-    if if_bottom_only:
-        seen = np.zeros_like(pcd_pred, dtype=bool)
-        seen[np.concatenate(nb_pcd_idxs)] = True  # mark every index that was ever visited
-        pcd_pred[~seen] = True
 
-    # else:
-        # # pcd_pred[pcd_pred< 0.0] = 1.0
-        # seen = np.zeros_like(pcd_pred, dtype=bool)
-        # seen[np.concatenate(nb_pcd_idxs)] = True  # mark every index that was ever visited
-        # pcd_pred[~seen] = True
-    #     pcd_pred[pcd_pred == 0]=2
-    # else:
-    #     pcd_pred[pcd_pred == 0] = 1
-
-    progress_callback(100)
-    return pcd_pred.astype(np.int32)+1#bool(False,True) to int(1,2)
 
 #Test
 if __name__ == "__main__":

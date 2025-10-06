@@ -24,6 +24,9 @@ TreeAIBox brings together four core LiDAR-processing workflows in a single GUI:
 - **QSM**  
   Plot-level skeletonization and export of tree structure to XML/OBJ.
 
+- **UrbanFiltering**  
+  Supervised deep learning–based filtering to classify urban scenes into seven categories: 1 = ground, 2 = vegetation, 3 = vehicles (cars+trucks), 4 = powerlines, 5 = fences, 6 = poles, 7 = buildings.
+
 
 ## 🚀 Features
 
@@ -34,7 +37,7 @@ TreeAIBox brings together four core LiDAR-processing workflows in a single GUI:
   Operates directly on raw 3D point clouds—no CHM or raster inputs—using voxel-based AI architectures for both training and inference.
   
 - **Sensor, scene, and resolution options**  
-  Supports TLS, ALS, and UAV LiDAR across boreal, mixedwood, and reclamation forest types.
+  Supports TLS, ALS, and UAV LiDAR across boreal, mixedwood, reclamation, and urban forest types.
   
 - **GPU acceleration toggle**  
   Runs on either GPU (CUDA) or CPU for flexibility.
@@ -106,12 +109,13 @@ In CloudCompare, under Script Register, click the TreeAIBox.
 
 Then select a point cloud, pick your module tab, choose/download a model, adjust settings, and click **Apply**.
 
-![TreeFiltering](https://github.com/user-attachments/assets/ee4f3558-6535-448b-8279-d0a4cff2158f)
-![TreeIsoNet](https://github.com/user-attachments/assets/d82e3bf6-8db1-49a4-a7c2-134ce4760fec)
-![WoodCls](https://github.com/user-attachments/assets/2cf1288e-d9e8-4cf8-8251-4e8e2dcd17ec)
-![QSM](https://github.com/user-attachments/assets/aa1a0bc8-febe-41d1-8bdb-f952970b5017)
+![TreeFiltering](https://github.com/user-attachments/assets/76b9dd32-a7c9-44de-9a92-f9f55806e9b7)
+![TreeIsoNet](https://github.com/user-attachments/assets/1457ecb3-5fa3-4e00-b6b9-441bac9a1368)
+![WoodCls](https://github.com/user-attachments/assets/7b9adfc1-76f1-4af4-9a54-e673cbf3ddc0)
+![UrbanFiltering](https://github.com/user-attachments/assets/8b98f467-468d-4732-ab70-1cbaf420ebce)
+![QSM](https://github.com/user-attachments/assets/d2d8b93d-4823-477e-be93-490d2c04a6a0)
 
-When processing ALS data, set an appropriate voxel resolution (e.g., 0.8 m horizontal by 2.0 m vertical) to optimize tree detection.
+When isolating ALS individual trees, set an appropriate voxel resolution (e.g., 0.8 m horizontal by 2.0 m vertical) to optimize tree detection on TreeisoNet.
 
 ## ⚙️ Configuration
 
@@ -134,8 +138,8 @@ The table below summarizes the voxel resolution and GPU memory used by the curre
   <tbody>
     <!-- ALS Classification -->
     <tr>
-      <td align="center" rowspan="3"><strong>ALS (or UAV without stems)</strong></td>
-      <td align="center" rowspan="3">Classification</td>
+      <td align="center" rowspan="4"><strong>ALS (or UAV without stems)</strong></td>
+      <td align="center" rowspan="4">Classification</td>
       <td align="center" rowspan="3">Vegetation layer</td>
       <td align="center">Mountainous</td>
       <td align="center">80 cm</td>
@@ -149,6 +153,12 @@ The table below summarizes the voxel resolution and GPU memory used by the curre
     <tr>
       <td align="center">Wellsite</td>
       <td align="center">15 cm</td>
+      <td align="center">3 GB</td>
+    </tr>
+    <tr>
+      <td align="center">Urban layers</td>
+      <td align="center">Urban</td>
+      <td align="center">30 cm</td>
       <td align="center">3 GB</td>
     </tr>
     <!-- UAV Classification -->
@@ -344,6 +354,9 @@ TreeAIBox regroupe quatre flux de travail LiDAR essentiels dans une seule interf
 
 - **QSM**  
   Squelettisation au niveau de la parcelle et export de la structure des arbres au format XML/OBJ.
+  
+- **UrbanFiltering**
+  Filtrage supervisé basé sur l’apprentissage profond pour classer les scènes urbaines en sept catégories : 1 = sol, 2 = végétation, 3 = véhicules (voitures + camions), 4 = lignes électriques, 5 = clôtures, 6 = poteaux, 7 = bâtiments.
 
 ## 🚀 Fonctionnalités
 
@@ -354,7 +367,7 @@ TreeAIBox regroupe quatre flux de travail LiDAR essentiels dans une seule interf
   Fonctionne directement sur des nuages de points 3D bruts — pas d’entrée CHM ou raster — utilisant des architectures IA basées sur les voxels pour l’entraînement et l’inférence.
 
 - **Options de capteur, de scène et de résolution**  
-  Prise en charge de TLS, ALS et LiDAR UAV pour les forêts boréales, mixtes et en renaturalisation.
+  Prend en charge le LiDAR TLS, ALS et UAV pour les forêts boréales, mixtes, en restauration et urbaines.
 
 - **Bascule d’accélération GPU**  
   Exécution sur GPU (CUDA) ou CPU pour plus de flexibilité.
@@ -453,7 +466,130 @@ Le tableau ci-dessous résume la résolution voxel et la mémoire GPU utilisée 
     </tr>
   </thead>
   <tbody>
-    <!-- Table unchanged -->
+    <!-- ALS Classification -->
+    <tr>
+      <td align="center" rowspan="4"><strong>ALS (ou UAV sans tiges)</strong></td>
+      <td align="center" rowspan="4">Classification</td>
+      <td align="center" rowspan="3">Couche de végétation</td>
+      <td align="center">Montagneuse</td>
+      <td align="center">80 cm</td>
+      <td align="center">3 Go</td>
+    </tr>
+    <tr>
+      <td align="center">Régulière</td>
+      <td align="center">50 cm</td>
+      <td align="center">3 Go</td>
+    </tr>
+    <tr>
+      <td align="center">Site pétrolier</td>
+      <td align="center">15 cm</td>
+      <td align="center">3 Go</td>
+    </tr>
+    <tr>
+      <td align="center">Couches urbaines</td>
+      <td align="center">Urbaine</td>
+      <td align="center">30 cm</td>
+      <td align="center">3 Go</td>
+    </tr>
+    <!-- UAV Classification -->
+    <tr>
+      <td align="center" rowspan="2"><strong>UAV (avec tiges)</strong></td>
+      <td align="center" rowspan="2">Classification</td>
+      <td align="center">Couche de végétation</td>
+      <td align="center">Régulière</td>
+      <td align="center">12 cm</td>
+      <td align="center">3 Go</td>
+    </tr>
+    <tr>
+      <td align="center">Tiges</td>
+      <td align="center">Forêt mixte</td>
+      <td align="center">8 cm</td>
+      <td align="center">3 Go</td>
+    </tr>
+    <!-- TLS Classification -->
+    <tr>
+      <td align="center" rowspan="7"><strong>TLS</strong></td>
+      <td align="center" rowspan="7">Classification</td>
+      <td align="center">Couche de végétation</td>
+      <td align="center">Régulière</td>
+      <td align="center">8 cm</td>
+      <td align="center">3 Go</td>
+    </tr>
+    <tr>
+      <td align="center" rowspan="3">Tiges</td>
+      <td align="center" rowspan="3">Boréale</td>
+      <td align="center">10 cm</td>
+      <td align="center">3 Go</td>
+    </tr>
+    <tr>
+      <td align="center">4 cm</td>
+      <td align="center">3 Go</td>
+    </tr>
+    <tr>
+      <td align="center">20 cm</td>
+      <td align="center">8 Go</td>
+    </tr>
+    <tr>
+      <td align="center">Tiges</td>
+      <td align="center">Régulière</td>
+      <td align="center">4 cm</td>
+      <td align="center">12 Go</td>
+    </tr>
+    <tr>
+      <td align="center" rowspan="2">Tiges + branches</td>
+      <td align="center" rowspan="2">Régulière</td>
+      <td align="center">4 cm</td>
+      <td align="center">2 Go</td>
+    </tr>
+    <tr>
+      <td align="center">2,5 cm</td>
+      <td align="center">3 Go</td>
+    </tr>
+    <!-- ALS Clustering -->
+    <tr>
+      <td align="center" rowspan="2"><strong>ALS (ou UAV sans tiges)</strong></td>
+      <td align="center" rowspan="2">Regroupement</td>
+      <td align="center">Cimes des arbres</td>
+      <td align="center">Site pétrolier</td>
+      <td align="center">10 cm</td>
+      <td align="center">4 Go</td>
+    </tr>
+    <tr>
+      <td align="center">Segments d’arbres</td>
+      <td align="center">Site pétrolier</td>
+      <td align="center">10 cm</td>
+      <td align="center">4 Go</td>
+    </tr>
+    <!-- UAV Clustering -->
+    <tr>
+      <td align="center" rowspan="2"><strong>UAV (avec tiges)</strong></td>
+      <td align="center" rowspan="2">Regroupement</td>
+      <td align="center">Bases d’arbres</td>
+      <td align="center">Forêt mixte</td>
+      <td align="center">10 cm</td>
+      <td align="center">3 Go</td>
+    </tr>
+    <tr>
+      <td align="center">Segments d’arbres</td>
+      <td align="center">Forêt mixte</td>
+      <td align="center">15 cm</td>
+      <td align="center">4 Go</td>
+    </tr>
+    <!-- TLS Clustering -->
+    <tr>
+      <td align="center" rowspan="2"><strong>TLS</strong></td>
+      <td align="center" rowspan="2">Regroupement</td>
+      <td align="center">Bases d’arbres</td>
+      <td align="center">Boréale</td>
+      <td align="center">10 cm</td>
+      <td align="center">3 Go</td>
+    </tr>
+    <tr>
+      <td align="center">Segments d’arbres</td>
+      <td align="center">Boréale</td>
+      <td align="center">15 cm</td>
+      <td align="center">4 Go</td>
+    </tr>
   </tbody>
 </table>
 

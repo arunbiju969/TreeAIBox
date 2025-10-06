@@ -164,12 +164,12 @@
     margin-bottom: 8px;
   }
 
-    .section-title {
-      font-size: 20px;
-      font-weight: bold;
-      margin: 0px 0 5px 0;
-      text-align: center;
-    }
+.section-title {
+  font-size: 20px;
+  font-weight: bold;
+  margin: 0px 0 5px 0;
+  text-align: center;
+}
 
 .content-row {
   display: flex;
@@ -377,17 +377,11 @@
       opacity: 0.5;
     }
 
-    /* When the checkbox is checked, restore full opacity */
-    #tile-enable:checked + label {
-      opacity: 1.0;
-    }
     /* Use :has() to update the dtm-tile-size input opacity based on checkbox state */
     .parameter-row:has(#tile-enable:not(:checked)) #dtm-tile-size {
       opacity: 0.5;
     }
-    .parameter-row:has(#tile-enable:checked) #dtm-tile-size {
-      opacity: 1.0;
-    }
+
 
     .button-container {
       display: flex;
@@ -886,6 +880,7 @@ input[type="range"]::-webkit-slider-thumb {
       <div class="tab" data-tab="treeisonet">TreeisoNet</div>
       <div class="tab" data-tab="woodcls">WoodCls</div>
       <div class="tab" data-tab="qsm">QSM</div>
+	  <div class="tab" data-tab="urbanfiltering">UrbanFiltering</div>
       <div class="tab" data-tab="about">About</div>
     </div>
 
@@ -955,7 +950,7 @@ input[type="range"]::-webkit-slider-thumb {
 
                 <div class="tooltip">
                     <button id="create-dtm-btn" style="margin-right: 5px;margin-bottom: 5px;margin-top: 5px;">Create DTM</button>
-                    <span class="tooltiptext">Create the DTM grid points from the TreeFilter class</span>
+                    <span class="tooltiptext">Create the DTM grid points from the treefilter class</span>
                 </div>
               </div>
             </div>
@@ -1431,6 +1426,69 @@ input[type="range"]::-webkit-slider-thumb {
         </div>
       </div>
     </div>
+	
+	<!-- UrbanFiltering Tab Content -->
+    <div class="tab-content" id="urbanfiltering-content">
+      <div class="section-title">Filtering seven classes from urban scene</div>
+      <p style="text-align: center;">(ground, vegetation, car, wiring, fence, pole, building)</p>
+
+      <div class="content-row">
+        <div class="image-container" style="width:60%">
+          <img class="resizable-image" id="urbantreefilter-image" src="img/urbanfiltering_als.jpg" alt="Urban Filtering Image">
+        </div>
+        <div class="handle"></div>
+        <div class="controls-container">
+          <div class="reference-box">
+            <div class="tooltip">
+              <button class="copy-btn">📄</button>
+              <span class="tooltiptext">Copy reference to clipboard</span>
+            </div>
+            <span class="copy-tooltip">Copied!</span>
+            Please reference the publication if you find this tool helpful:
+            <br><br>
+            Movchan, Dmytro, Zhouxin Xi, Angeline Van Dongen, Charumitha Selvaraj, and Dani Degenhardt. "UAV-based wellsite reclamation monitoring using transformer-based deep learning on multi-seasonal LiDAR and multispectral data" <i> Available at SSRN: https://ssrn.com/abstract=5369283</i>
+            <a href="http://dx.doi.org/10.2139/ssrn.5369283" class="external-link">http://dx.doi.org/10.2139/ssrn.5369283</a>
+			<br><br>
+            Singer, Nina M., and Vijayan K. Asari. "DALES objects: a large scale benchmark dataset for instance segmentation in aerial LiDAR" <i> IEEE Access </i>9 (2021):97495-97504
+            <br>
+            <a href="https://doi.org/10.1109/ACCESS.2021.3094127" class="external-link">https://doi.org/10.1109/ACCESS.2021.3094127</a>
+          </div>
+
+          <details class="option-group" open>
+            <summary class="option-group-title">Sensor</summary>
+            <div class="option-group-content">
+              <div class="radio-option">
+                <input type="radio" id="urbanfilter-als-sensor" name="urbanfilter-sensor" checked>
+                <label for="urbanfilter-als-sensor">ALS</label>
+              </div>
+            </div>
+          </details>
+
+          <div class="select-option">
+            <div class="select-model-container">
+              <div class="select-option-title">Predefined models</div>
+              <select id="pretrain-urbanfiltering">
+                <!-- Models will be populated dynamically -->
+              </select>
+            </div>
+            <div class="button-container">
+              <div class="button-row">
+                <div class="tooltip">
+                    <button class="model-path-btn">Model path</button>
+                    <span class="tooltiptext">Open the folder with downloaded models</span>
+                </div>
+                <div class="tooltip">
+                    <button class="download-btn">Download</button>
+                    <span class="tooltiptext">Download the pre-trained model</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button class="full-width-button apply-btn">Apply</button>
+        </div>
+      </div>
+    </div>
 
     <div class="tab-content" id="about-content">
     <div class="section-title">About TreeAIBox</div>
@@ -1466,6 +1524,7 @@ input[type="range"]::-webkit-slider-thumb {
             <li><strong>TLS:</strong> <a href="https://doi.org/10.20383/103.0814" class="external-link">Jasper National Park plot scans</a> collected by University of Lethbridge</li>
             <li><strong>TLS:</strong> <a href="https://doi.org/10.20383/103.0814" class="external-link"> Plot scans</a> collected by University of Lethbridge and during 2014-2020 and <a href="https://laserscanning.fi/results-available-for-international-benchmarking-of-terrestrial-laser-scanning-methods/" class="external-link"> scans</a> by Finnish Geodetic Institute during 2014</li>
             <li><strong>ALS:</strong> Eastern Slopes of Alberta scans collected by University of Lethbridge</li>
+			<li><strong>ALS:</strong> <a href="https://doi.org/10.1109/ACCESS.2021.3094127" class="external-link"> Plot scans</a> University of Dayton Vision Lab</li>
             <li><strong>UAV:</strong> <a href="https://open.canada.ca/data/en/dataset/15c99460-599b-423a-90e0-1af8a4f81913" class="external-link"> Reclamation UAV scans </a> collected by Natural Resources Canada</li>
             <li><strong>UAV:</strong> <a href="https://doi.org/10.5281/zenodo.8287792" class="external-link">FOR-instance dataset</a> from Puliti S, Pearse G, Surový P, et al.(2023).</li>
           </ul>
@@ -1618,7 +1677,11 @@ input[type="range"]::-webkit-slider-thumb {
             let componentType = "treefilter";
             if (currentTab!=="treefiltering"){
               componentType = document.getElementById('stem-component').checked ? 'stemcls' : 'branchcls';
+              if (currentTab==="urbanfiltering"){
+				componentType="urbanfilter"
+			  }
             }
+
             const select = document.getElementById('pretrain-'+currentTab);
 
             // showNotification(select.textContent, "warning");
@@ -1640,7 +1703,7 @@ input[type="range"]::-webkit-slider-thumb {
             backend.getSelectedModel(selectedModel).then(model => {
                 // Then apply WoodCls
                 updateProgressBar(5);
-                backend.compFilter(useGPU, componentType,componentType==="treefilter" && (!isALS),"filter").then(success => {
+                backend.compFilter(useGPU, componentType,componentType==="treefilter" && (!isALS) || componentType==="urbanfilter","filter").then(success => {
                     // if (!success) {
                     //     showNotification("Failed to apply " + componentType + " filtering", "error");
                     // }
@@ -1901,10 +1964,13 @@ function initializeResizablePanels() {
                 document.getElementById('treefilter-image').src = 'img/treefiltering_tls.jpg';
                 toggleALSSpecificUI(true);
               } else if (this.id === 'filter-uav-sensor') {
-                document.getElementById('treeisonet-image').src = 'img/treefiltering_uav.jpg';
+                document.getElementById('treefilter-image').src = 'img/treefiltering_uav.jpg';
                 toggleALSSpecificUI(true);
               } else if (this.id === 'filter-als-sensor') {
-                document.getElementById('treeisonet-image').src = 'img/treefiltering_als.jpg';
+                document.getElementById('treefilter-image').src = 'img/treefiltering_als.jpg';
+                toggleALSSpecificUI(true);
+              } else if (this.id === 'urbanfilter-als-sensor') {
+                document.getElementById('urbanfilter-image').src = 'img/urbanfiltering_als.jpg';
                 toggleALSSpecificUI(true);
               }
 
@@ -2130,6 +2196,11 @@ function initializeResizablePanels() {
             } else if (document.getElementById('filter-als-sensor').checked) {
                 keywords.push('als');
             }
+        }else if (currentTab === 'urbanfiltering') {
+            // Add sensor
+            if (document.getElementById('urbanfilter-als-sensor').checked) {
+                keywords.push('als');
+            }
         }
         console.log("Filtering models with keywords:", keywords);
 
@@ -2353,6 +2424,21 @@ function updateSliderValue(slider) {
     updateSliderValue(this);
   });
   document.getElementById('treeisonet-image').src = 'img/treeisonet_any.jpg';
+  
+  // Handle tile-enable checkbox opacity changes
+  document.getElementById('tile-enable').addEventListener('change', function() {
+    const tileInput = document.getElementById('dtm-tile-size');
+    const label = this.nextElementSibling; // The label element
+    
+    if (this.checked) {
+      tileInput.style.opacity = '1.0';
+      label.style.opacity = '1.0';
+    } else {
+      tileInput.style.opacity = '0.5';
+      label.style.opacity = '0.5';
+    }
+  });
+  
   </script>
 </body>
 </html>

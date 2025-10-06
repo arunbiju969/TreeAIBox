@@ -4,6 +4,7 @@
 "treefiltering_als_esegformer3D_128_50cm(GPU3GB)",
 "treefiltering_als_esegformer3D_128_80cm(GPU3GB)",
 "treefiltering_uav_esegformer3D_128_12cm(GPU3GB)",
+"urbanfiltering_als_esegformer3D_112_30cm(GPU3GB)",
 "treeisonet_als_reclamation_treeloc_esegformer3D_128_10cm(GPU4GB)",
 "treeisonet_als_reclamation_treeoff_esegformer3D_128_10cm(GPU4GB)",
 "treeisonet_tls_boreal_stemcls_esegformer3D_128_4cm(GPU3GB)",

@@ -216,10 +216,10 @@ class Segformer(nn.Module):
 
     def __init__(
             self,
+            num_classes=3,
             block3d_size=1024,
             patch_size=3,
             in_chans=1,
-            num_classes=2,
             embed_dims=[32, 64, 128, 256],  # Reduced dimensions
             num_heads=[1, 2, 4, 8],
             mlp_ratios=[2, 2, 2, 2],  # Reduced MLP ratios
