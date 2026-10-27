@@ -15,8 +15,20 @@ import time
 import numpy as np
 import pandas as pd
 import laspy
+from pathlib import Path
 from scipy.spatial import ConvexHull, KDTree
 from sklearn.cluster import DBSCAN
+
+# Ensure root workspace is in sys.path
+root_dir = str(Path(__file__).resolve().parent.parent.parent)
+if root_dir not in sys.path:
+    sys.path.insert(0, root_dir)
+
+from scripts.pointcloud_processing.las_utils import (
+    find_tree_id_dimension,
+    get_tree_id_array,
+    get_unique_tree_ids,
+)
 
 
 def compute_crown_area_and_diam(xy_points):
@@ -90,17 +102,20 @@ def refine_plot(las_path, output_dir, min_height=2.5, min_pts=120, stem_eps=0.85
     coords = np.column_stack([las.x, las.y, las.z])
     
     has_stemcls = 'stemcls' in las.point_format.dimension_names
-    has_itc = 'itc' in las.point_format.dimension_names
-    
-    if not has_itc:
-        print(f"[!] Error: No 'itc' dimension found in {las_path}. Skipping.")
+    dim_list = list(las.point_format.dimension_names)
+    tree_field = find_tree_id_dimension(dim_list)
+
+    if not tree_field:
+        print(f"[!] Error: No 'itc' or recognized tree ID dimension found in {las_path}. Skipping.")
         return None
-        
-    itc_orig = np.array(las.itc, dtype=np.int32)
+
+    if tree_field != 'itc':
+        print(f"[*] Found tree segmentation in '{tree_field}'. Using as ITC field.")
+    itc_orig = np.array(las[tree_field], dtype=np.int32)
     stemcls = np.array(las.stemcls, dtype=np.int32) if has_stemcls else np.zeros(n_points, dtype=np.int32)
     stem_mask_all = (stemcls > 1)
-    
-    unique_itc = np.unique(itc_orig[itc_orig > 0])
+
+    unique_itc = np.array(get_unique_tree_ids(itc_orig))
     print(f"[*] Original state: {len(unique_itc)} ITC clusters ({np.sum(itc_orig > 0):,} canopy points)")
     
     itc_refined = np.zeros(n_points, dtype=np.int32)
@@ -184,7 +199,11 @@ def refine_plot(las_path, output_dir, min_height=2.5, min_pts=120, stem_eps=0.85
             current_new_id += 1
 
     # Update LAS data with refined ITC
+    if 'itc' not in las.point_format.dimension_names:
+        las.add_extra_dim(laspy.ExtraBytesParams(name='itc', type=np.int32))
     las.itc = itc_refined
+    if tree_field and tree_field in las.point_format.dimension_names:
+        las[tree_field] = itc_refined
     
     # Save refined LAS
     out_las_path = os.path.join(output_dir, f"{plot_name}_refined.las")
@@ -284,7 +303,18 @@ def main():
     output_dir = os.path.join(input_dir, "Refined")
     os.makedirs(output_dir, exist_ok=True)
     
-    las_files = sorted(glob.glob(os.path.join(input_dir, "plot_*_segmented.las")))
+    las_files = sorted(
+        glob.glob(os.path.join(input_dir, "plot_*_treeaibox.las"))
+        + glob.glob(os.path.join(input_dir, "plot_*_treelearn.las"))
+        + glob.glob(os.path.join(input_dir, "plot_*_forestformer.las"))
+        + glob.glob(os.path.join(input_dir, "plot_*_forest_former.las"))
+        + glob.glob(os.path.join(input_dir, "plot_*_segmented.las"))
+    )
+    if not las_files:
+        las_files = sorted([
+            f for f in glob.glob(os.path.join(input_dir, "plot_*.las"))
+            if not f.endswith("_refined.las")
+        ])
     print(f"Found {len(las_files)} segmented plot files in {input_dir}")
     print(f"Refined results will be saved to: {output_dir}\n")
     

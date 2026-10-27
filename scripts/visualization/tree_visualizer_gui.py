@@ -6,6 +6,7 @@ Allows loading LAS files, selecting tree IDs from 'itc' scalar field, and visual
 
 import sys
 import os
+from pathlib import Path
 import numpy as np
 import laspy
 import pyvista as pv
@@ -17,6 +18,13 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
 from PyQt6.QtGui import QFont
+
+# Ensure root workspace is in sys.path
+root_dir = str(Path(__file__).resolve().parent.parent.parent)
+if root_dir not in sys.path:
+    sys.path.insert(0, root_dir)
+
+from scripts.pointcloud_processing.las_utils import ensure_itc_dimension, get_unique_tree_ids
 
 
 class TreeVisualizerGUI(QMainWindow):
@@ -169,16 +177,18 @@ class TreeVisualizerGUI(QMainWindow):
             self.las_data = laspy.read(file_path)
             self.file_label.setText(f"Loaded: {os.path.basename(file_path)}")
 
-            # Check for ITC field
-            if 'itc' not in self.las_data.point_format.dimension_names:
+            # Check for ITC field or compatible tree ID field
+            success, source_field = ensure_itc_dimension(self.las_data, target_dim='itc')
+            if not success:
                 QMessageBox.warning(self, "Warning",
-                                  "No 'itc' scalar field found in the LAS file.")
+                                  "No 'itc' or compatible tree ID scalar field found in the LAS file.")
                 self.las_data = None
                 return
+            if source_field != 'itc':
+                print(f"[INFO] Using tree segmentation from '{source_field}'.")
 
             # Extract unique ITC values
-            itc_values = np.array(self.las_data['itc'])
-            self.unique_itc_values = np.unique(itc_values[itc_values > 0]).astype(int)  # Exclude 0 (likely unassigned) and convert to int
+            self.unique_itc_values = np.array(get_unique_tree_ids(np.array(self.las_data['itc'])), dtype=int)
 
             # Populate tree combo box
             self.id_combo.clear()

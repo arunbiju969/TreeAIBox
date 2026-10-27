@@ -8,10 +8,23 @@ This directory contains modular utility scripts, visualization GUIs, processing 
 
 ```
 scripts/
+├── launch/                        # Double-click launchers (bat + ps1) for the main GUIs
+│   ├── run_treeaibox.bat / .ps1              # TreeAIBox Standalone
+│   ├── run_forestry_ai_suite.bat / .ps1      # Forestry AI Suite
+│   ├── run_refine_plots.bat / .ps1           # Segmentation Refiner
+│   └── run_modern_tree_visu.ps1              # Modern Tree Visualizer
+│
 ├── visualization/                 # 3D interactive viewers & slice visualization tools
-│   ├── treeAIbox_Enhancer.py     # Comprehensive PyQt6+PyVista tree enhancement GUI
-│   ├── tree_visu.py              # Modern Tree Visualizer GUI (run_modern_tree_visu.ps1)
-│   ├── tree_visualizer_gui.py    # Basic Tree Visualizer GUI (run_tree_visualizer.bat)
+│   ├── treeAIbox_Enhancer.py     # Forestry AI Suite entry point (thin launcher)
+│   ├── forestry_suite/           # Forestry AI Suite package (modularized):
+│   │   ├── dialogs/              #   polygon, ITC assignment, batch params, GDB import, LAS compare, slice viewer
+│   │   ├── window/               #   TreeVisualizerGUI assembled from 13 cohesive mixins
+│   │   ├── analysis/             #   pure math engines (components, volume formulas, trunk trajectories)
+│   │   ├── widgets.py            #   shared widgets (ModernButton)
+│   │   ├── error_handling.py     #   lazy error logging + Qt exception capture
+│   │   └── app.py                #   application entry point
+│   ├── tree_visu.py              # Modern Tree Visualizer GUI (launch/run_modern_tree_visu.ps1)
+│   ├── tree_visualizer_gui.py    # Basic Tree Visualizer GUI
 │   ├── plane_cut_visualization.py# Interactive horizontal plane cut with RANSAC fitting
 │   ├── simple_plane_visualization.py # Basic plane slice viewer
 │   └── branch_split_detection.py # 8m height plane DBSCAN clustering
@@ -33,6 +46,9 @@ scripts/
 │   └── extract_tree_centers.py   # CLI tool to extract XY centers & DBH to CSV / GeoJSON
 │
 ├── pointcloud_processing/         # Point cloud filtering, cleaning, RGB repair & vectorization
+│   ├── las_utils.py              # Unified tree ID detection, ITC dimension mapping & tree filtering
+│   ├── sync_treeid_to_itc.py     # Batch CLI to sync 'treeID' to 'itc' scalar field
+│   ├── refine_segmented_plots.py # Automated stem disentanglement & false tree removal
 │   ├── las_to_polygon_gui.py     # PyQt6 GUI for generating 2D boundary polygons (Shapefile/GeoJSON)
 │   ├── las_rgb_checker.py        # Inspects LAS/LAZ files for valid RGB channels
 │   ├── rgb_restoration_tool.py   # Restores RGB channels from raw LAS to processed LAS via KDTree
@@ -55,44 +71,46 @@ scripts/
 │
 ├── Batch Files/                   # Windows batch scripts for FUSION CLI tools
 │   ├── clip_plots.bat
+│   ├── dtm2tif_sample.bat
 │   ├── generate_dtm.bat
 │   ├── groundfilter.bat
 │   ├── normalize_stands.bat
 │   ├── process_single_stand_grid.bat
-│   └── run_cloudmetrics.bat
+│   ├── run_cloudmetrics.bat
+│   └── run_gridmetrics_on_all_stands.bat
 │
-├── test_data/                     # Sample and test point cloud datasets
-│   ├── test_output_branch_1.csv
-│   └── test_output_trunk.csv
-│
-├── utils/                         # Maintenance and diagnostic tools
-│   └── find_empty_files.py       # Workspace empty file scanner
-│
-├── error_logs/                    # Runtime exception logs from treeAIbox_Enhancer
-│
-└── _archive/                      # Retired 0-byte orphan stubs & empty logs
-    ├── batch_tree_component_gui.py (0 bytes)
-    ├── las_to_poylgon.py           (0 bytes, typo in original name)
-    ├── groundfilter_sample.bat     (0 bytes)
-    ├── thin_overlap.bat            (0 bytes)
-    └── empty_logs/                 (70 empty log files)
+└── utils/                         # Maintenance and diagnostic tools
+    └── find_empty_files.py       # Workspace empty file scanner
 ```
+
+> Runtime exception logs from the Forestry AI Suite are written to `scripts/error_logs/`
+> (gitignored, created only when an error occurs).
 
 ---
 
 ## Quick Launch Reference
 
+### Main Applications (launchers in scripts\launch\)
+```powershell
+# TreeAIBox Standalone:
+.\scripts\launch\run_treeaibox.ps1
+
+# Forestry AI Suite (TreeAIBox / TreeLearn / ForestFormer):
+.\scripts\launch\run_forestry_ai_suite.ps1
+
+# Automated Segmentation Refiner:
+.\scripts\launch\run_refine_plots.ps1
+```
+
 ### Tree Visualizers
 ```powershell
 # Modern Tree Visualizer GUI:
-.\run_modern_tree_visu.ps1
+.\scripts\launch\run_modern_tree_visu.ps1
 
 # Basic Tree Visualizer GUI:
-.\run_tree_visualizer.ps1
-# or batch:
-.\run_tree_visualizer.bat
+.\.venv\Scripts\python.exe scripts\visualization\tree_visualizer_gui.py
 
-# TreeAIBox Enhancer:
+# Forestry AI Suite (direct):
 .\.venv\Scripts\python.exe scripts\visualization\treeAIbox_Enhancer.py
 ```
 

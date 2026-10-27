@@ -1,7 +1,3 @@
 @echo off
-setlocal
-cd /d "%~dp0"
-echo Starting TreeAIBox Enhancer...
-call .venv\Scripts\activate.bat
-python scripts\visualization\treeAIbox_Enhancer.py
-pause
+echo Redirecting to Forestry AI Suite...
+call "%~dp0scripts\launch\run_forestry_ai_suite.bat"
