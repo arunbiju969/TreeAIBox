@@ -49,6 +49,7 @@ scripts/
 │   ├── las_utils.py              # Unified tree ID detection, ITC dimension mapping & tree filtering
 │   ├── sync_treeid_to_itc.py     # Batch CLI to sync 'treeID' to 'itc' scalar field
 │   ├── refine_segmented_plots.py # Automated stem disentanglement & false tree removal
+│   ├── las_to_laz.py             # High-performance LAS <-> LAZ converter (CLI & GUI)
 │   ├── las_to_polygon_gui.py     # PyQt6 GUI for generating 2D boundary polygons (Shapefile/GeoJSON)
 │   ├── las_rgb_checker.py        # Inspects LAS/LAZ files for valid RGB channels
 │   ├── rgb_restoration_tool.py   # Restores RGB channels from raw LAS to processed LAS via KDTree
@@ -134,4 +135,16 @@ scripts/
 ### Point Cloud to Polygon GUI
 ```powershell
 .\.venv\Scripts\python.exe scripts\pointcloud_processing\las_to_polygon_gui.py
+```
+
+### LAS to LAZ Converter
+```powershell
+# Interactive GUI:
+.\run_las_to_laz.bat
+# or PowerShell:
+.\run_las_to_laz.ps1
+
+# CLI single file or folder:
+.\.venv\Scripts\python.exe scripts\pointcloud_processing\las_to_laz.py -i "path/to/file.las"
+.\.venv\Scripts\python.exe scripts\pointcloud_processing\las_to_laz.py -i "path/to/folder" --recursive --cores 4
 ```

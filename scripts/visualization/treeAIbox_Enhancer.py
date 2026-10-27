@@ -10,6 +10,12 @@ import os
 import sys
 from pathlib import Path
 
+# Ensure safe UTF-8 terminal I/O on Windows without charmap encoding crashes
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+if hasattr(sys.stderr, 'reconfigure'):
+    sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+
 # Ensure both repository root and scripts/visualization are in sys.path
 _repo_root = str(Path(__file__).resolve().parent.parent.parent)
 _vis_dir = str(Path(__file__).resolve().parent)
